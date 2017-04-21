@@ -110,3 +110,19 @@ class SignIndexActionTest(TestCase):
         self.assertIn(b"phone error", response.content)
     def test_sign_index_action_phone_or_event_id_error(self):
         """ 手机号或发布会ID错误"""
+        response = self.client.post('/login_action/',data=self.login_user)
+        response = self.client.post('/sign_index_action/2/',{'phone':'10000'})
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b"event id or phone error", response.content)
+    def test_sign_index_action_user_sign_has(self):
+        """用户已签到"""
+        response = self.client.post('/login_action/',data=self.login_user)
+        response = self.client.post('/sign_index_action/2/',{'phone':'10000'})
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b"user has sign in", response.content)
+    def test_sign_index_action_sign_success(self):
+        """签到成功"""
+        response = self.client.post('/login_action/',data=self.login_user)
+        response = self.client.post('/sign_index_action/1/',{'phone':'10000'})
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b"sign in success", response.content)

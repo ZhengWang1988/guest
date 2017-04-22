@@ -1,6 +1,9 @@
 from django.http import JsonResponse
 from sign.models import Event,Guest
 from django.core.exceptions import ValidationError,ObjectDoesNotExist
+from django.db.utils import IntegrityError
+import time
+
 
 #添加发布会接口
 def add_event(request):
@@ -69,13 +72,44 @@ def get_event_list(request):
 
 
 #添加嘉宾接口
+def add_guest(request):
+    eid = request.POST.get('eid','')    #关联发布会ID
+    realname = request.POST.get('realname','')  #姓名
+    phone = request.POST.get('phone','')    #手机号
+    email = request.POST.get('email','')    #邮箱
 
+    if eid == '' or realname == '' or phone == '':
+        return JsonResponse({'status':10021,'message':'parameter error'})
+    result = Event.objects.filter(id=eid)
+    if not result:
+        return JsonResponse({'status':10022,'message':'event id null'})
+    result = Event.objects.filter(id=eid).status
+    if not result:
+        return JsonResponse({'status':10023,'message':'event status is not available'})
 
+    event_list = Event.objects.get(id=eid).limit    #发布会限制人数
+    guest_list = Guest.objects.filter(event_id=eid) #发布会已添加的人数
 
+    if len(guest_limit) >= event_limit:
+        return JsonResponse({'status':10024,'message':'event number is full'})
 
+    event_time = Event.objects.get(id=eid).start_time   #获取发布会开始时间
+    etime = str(event_time).split('.')[0]
+    timeArray = time.strptime(etime,"%Y-%m-%d %H:%M:%S")
+    e_time = int(time.mktime(timeArray))
 
+    now_time = str(time.time()) #当前时间
+    ntime = now_time.split('.')[0]
+    n_time = int(ntime)
 
+    if n_time >= e_time:
+        return JsonResponse({'status':10025,'message':'event has started'})
 
+    try:
+        Guest.objects.create(realname=realname,phone=int(phone),email=email,sign=0,event_id=int(eid))
+    except IntegrityError:
+        return JsonResponse({'status':10026,'message':'the event guest phone number repeat'})
+    return JsonResponse({'status':200,'message':'add guest success'})
 
 
 #查询嘉宾接口
@@ -88,7 +122,41 @@ def get_event_list(request):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #发布会签到接口
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

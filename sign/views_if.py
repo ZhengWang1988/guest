@@ -66,6 +66,7 @@ def get_event_list(request):
                 event['status'] = i.status
                 event['address'] = i.address
                 event['start_time'] = i.start_time
+                datas.append(event)
             return JsonResponse({'status':200,'message':'success','data':datas})
         else:
             return JsonResponse({'status':10022,'message':'query result is empty'})
